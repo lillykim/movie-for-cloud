@@ -5,6 +5,7 @@ from routes.movies import movie_router
 from routes.admin import admin_router
 from database.connection import conn
 import os
+import requests
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -18,6 +19,12 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+@app.get("/whoami")
+def whoami():
+    az = requests.get("http://169.254.169.254/latest/meta-data/placement/availability-zone").text
+    iid = requests.get("http://169.254.169.254/latest/meta-data/instance-id").text
+    return {"az": az, "instance_id": iid}
 
 from fastapi.middleware.cors import CORSMiddleware
 # 환경변수에서 CORS 허용 도메인 읽기 (여러 개일 경우 ,로 구분)
@@ -45,6 +52,10 @@ app.include_router(admin_router, prefix="/admin")
 
 @app.get("/")
 def root():
+    return {"status": "ok"}
+
+@app.get("/health")
+def health_check():
     return {"status": "ok"}
 
 if __name__ == "__main__":
