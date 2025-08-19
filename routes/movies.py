@@ -91,7 +91,7 @@ async def get_all_movies(session=Depends(get_session)) -> List[Movie]:
 # async def get_movie(movie_id: int, session=Depends(get_session)) -> Movie:
 #     movie = session.get(Movie, movie_id)
 #     if not movie:
-#         raise HTTPException(status_code=404, detail="해당 영화를 찾을 수 없습니다.") #url 중복 문제 해결용으로 일단 삭제
+#         raise HTTPException(status_code=404, detail="해당 영화를 찾을 수 없습니다. Can not find the movie") #url 중복 문제 해결용으로 일단 삭제
 @movie_router.get("/{movie_id}")
 async def get_movie(movie_id: int, session=Depends(get_session)):
     movie = session.get(Movie, movie_id)
