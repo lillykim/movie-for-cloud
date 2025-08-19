@@ -13,7 +13,7 @@
   "containerDefinitions": [
     {
       "name": "movieApp",
-      "image": "362234323839.dkr.ecr.ap-northeast-2.amazonaws.com/movie-app-backend:v1",
+      "image": "362234323839.dkr.ecr.ap-northeast-2.amazonaws.com/movie-app-backend:IMAGE_TAG",
       "essential": true,
       "portMappings": [
         { "containerPort": 8000, "hostPort": 8000, "protocol": "tcp" }

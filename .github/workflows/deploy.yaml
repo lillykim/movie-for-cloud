@@ -1,19 +1,9 @@
-name: Deploy to ECS (tagged release)
+name: Deploy Backend to ECS
 
 on:
   push:
     tags:
-      - 'v*'         # v1, v2, v3 ... 태그 푸시 시 동작
-
-env:
-  AWS_REGION: ap-northeast-2
-  AWS_ACCOUNT_ID: '362234323839'
-  ECR_REGISTRY: 362234323839.dkr.ecr.ap-northeast-2.amazonaws.com
-  ECR_REPOSITORY: movie-app-backend
-  ECS_CLUSTER: movie-tiger-cluster
-  ECS_SERVICE: movie-tiger-service
-  TASK_DEF_PATH: ecs/ecs-task-def.json
-  CONTAINER_NAME: movieApp
+      - "v*"
 
 jobs:
   deploy:
@@ -23,37 +13,37 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set IMAGE_TAG from Git tag
-        id: tag
-        run: echo "IMAGE_TAG=${GITHUB_REF_NAME}" >> $GITHUB_ENV
-
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ap-northeast-2
 
-      - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v2
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build, tag and push image
+      - name: Build, Tag, and Push Docker image
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:${IMAGE_TAG} .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:${IMAGE_TAG}
+          IMAGE_TAG=${GITHUB_REF_NAME}
+          echo "Using tag: $IMAGE_TAG"
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: movie-app-backend
 
-      - name: Render task definition with new image
-        id: render
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: ${{ env.TASK_DEF_PATH }}
-          container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+      - name: Prepare task definition
+        run: |
+          IMAGE_TAG=${GITHUB_REF_NAME}
+          sed -i "s|IMAGE_TAG|$IMAGE_TAG|g" ecs/ecs-task-def.json
+          cat ecs/ecs-task-def.json
 
       - name: Deploy to Amazon ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
-          task-definition: ${{ steps.render.outputs.task-definition }}
-          service: ${{ env.ECS_SERVICE }}
-          cluster: ${{ env.ECS_CLUSTER }}
+          task-definition: ecs/ecs-task-def.json
+          service: movie-tiger-service
+          cluster: movie-tiger-cluster
           wait-for-service-stability: true
