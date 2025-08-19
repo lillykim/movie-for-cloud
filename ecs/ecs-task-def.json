@@ -1,0 +1,39 @@
+{
+  "family": "movie-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::362234323839:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::362234323839:role/movie-app-task-role",
+  "runtimePlatform": {
+    "operatingSystemFamily": "LINUX",
+    "cpuArchitecture": "X86_64"
+  },
+  "containerDefinitions": [
+    {
+      "name": "movieApp",
+      "image": "362234323839.dkr.ecr.ap-northeast-2.amazonaws.com/movie-app-backend:v1",
+      "essential": true,
+      "portMappings": [
+        { "containerPort": 8000, "hostPort": 8000, "protocol": "tcp" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/movie-app-backend",
+          "awslogs-region": "ap-northeast-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "secrets": [
+        { "name": "DATABASE_URL",    "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:362234323839:secret:movie/deploy-4iE5Nw:DATABASE_URL::" },
+        { "name": "SECRET_KEY",      "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:362234323839:secret:movie/deploy-4iE5Nw:SECRET_KEY::" },
+        { "name": "S3_BUCKET",       "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:362234323839:secret:movie/deploy-4iE5Nw:S3_BUCKET::" },
+        { "name": "S3_REGION",       "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:362234323839:secret:movie/deploy-4iE5Nw:S3_REGION::" },
+        { "name": "CLOUDFRONT_URL",  "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:362234323839:secret:movie/deploy-4iE5Nw:CLOUDFRONT_URL::" },
+        { "name": "ALLOWED_ORIGINS", "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:362234323839:secret:movie/deploy-4iE5Nw:ALLOWED_ORIGINS::" }
+      ]
+    }
+  ]
+}
