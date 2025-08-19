@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from routes.users import user_router
 from routes.movies import movie_router
 from routes.admin import admin_router
-from database.connection import conn
+from database.connection import conn, settings
 import os
 import requests
 
@@ -29,9 +29,15 @@ def whoami():
 from fastapi.middleware.cors import CORSMiddleware
 # 환경변수에서 CORS 허용 도메인 읽기 (여러 개일 경우 ,로 구분)
 # origins = os.getenv("ALLOWED_ORIGINS", "").split(",")
+# origins = [
+#     origin.strip()
+#     for origin in os.getenv("ALLOWED_ORIGINS", "").split(",")
+#     if origin.strip()
+# ]
+# ✅ settings.allowed_origins 사용 (Secrets Manager에서 불러온 값)
 origins = [
     origin.strip()
-    for origin in os.getenv("ALLOWED_ORIGINS", "").split(",")
+    for origin in settings.allowed_origins.split(",")
     if origin.strip()
 ]
 print("CORS 허용 origins:", origins)
@@ -39,7 +45,7 @@ print("CORS 허용 origins:", origins)
 app.add_middleware(
     CORSMiddleware,
     # allow_origins=["http://localhost:5173","http://my-project-bucket-46.s3-website.ap-northeast-2.amazonaws.com","https://my-pic-saving-bucket.s3.ap-northeast-2.amazonaws.com"],
-    allow_origins=origins, # 수정: 환경변수 사용
+    allow_origins=origins, # 수정: 환경변수 사용, settings 기반
     allow_credentials=True,
     # allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_methods=["*"],
