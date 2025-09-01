@@ -26,13 +26,6 @@
           "awslogs-stream-prefix": "ecs"
         }
       },
-      "healthCheck": {
-        "command": ["CMD-SHELL", "curl -fsS http://localhost:8000/health || exit 1"],
-        "interval": 30,
-        "timeout": 5,
-        "retries": 3,
-        "startPeriod": 10
-      },
       "secrets": [
         { "name": "DATABASE_URL",    "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:362234323839:secret:movie/deploy-4iE5Nw:DATABASE_URL::" },
         { "name": "SECRET_KEY",      "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:362234323839:secret:movie/deploy-4iE5Nw:SECRET_KEY::" },

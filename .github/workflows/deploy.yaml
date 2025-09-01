@@ -2,8 +2,7 @@ name: Deploy Backend to ECS
 
 on:
   push:
-    tags:
-      - 'v*'
+    tags: [ 'v*' ]
 
 concurrency:
   group: backend-deploy-${{ github.ref }}
@@ -21,12 +20,10 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 키 방식 (리포지토리 시크릿 2개 필요)
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -44,18 +41,18 @@ jobs:
           push: true
           tags: ${{ env.ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPO }}:${{ github.ref_name }}
 
-      # sed 대신 안전한 공식 렌더 액션
       - name: Render task definition
+        id: render   # ★ 반드시 필요
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: ecs/ecs-task-def.json
-          container-name: ${{ env.CONTAINER_NAME }}
+          container-name: ${{ env.CONTAINER_NAME }}   # TaskDef의 name과 완전 일치
           image: ${{ env.ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPO }}:${{ github.ref_name }}
 
       - name: Deploy to Amazon ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
-          task-definition: ecs/ecs-task-def.json
+          task-definition: ${{ steps.render.outputs.task-definition }}  # ★ 렌더 결과 사용
           service: ${{ env.SERVICE }}
           cluster: ${{ env.CLUSTER }}
           wait-for-service-stability: true
