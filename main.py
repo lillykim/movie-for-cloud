@@ -20,26 +20,20 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-@app.get("/whoami")
-def whoami():
-    az = requests.get("http://169.254.169.254/latest/meta-data/placement/availability-zone").text
-    iid = requests.get("http://169.254.169.254/latest/meta-data/instance-id").text
-    return {"az": az, "instance_id": iid}
-
 from fastapi.middleware.cors import CORSMiddleware
 # 환경변수에서 CORS 허용 도메인 읽기 (여러 개일 경우 ,로 구분)
-# origins = os.getenv("ALLOWED_ORIGINS", "").split(",")
-# origins = [
-#     origin.strip()
-#     for origin in os.getenv("ALLOWED_ORIGINS", "").split(",")
-#     if origin.strip()
-# ]
-# ✅ settings.allowed_origins 사용 (Secrets Manager에서 불러온 값)
+origins = os.getenv("ALLOWED_ORIGINS", "").split(",")
 origins = [
     origin.strip()
-    for origin in settings.allowed_origins.split(",")
+    for origin in os.getenv("ALLOWED_ORIGINS", "").split(",")
     if origin.strip()
 ]
+# ✅ settings.allowed_origins 사용 (Secrets Manager에서 불러온 값)
+# origins = [
+#     origin.strip()
+#     for origin in settings.allowed_origins.split(",")
+#     if origin.strip()
+# ]
 print("CORS 허용 origins:", origins)
 # CORS 미들웨어 설정
 app.add_middleware(

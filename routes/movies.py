@@ -20,11 +20,27 @@ from dotenv import load_dotenv
 # 이미지만 저장하는 S3버킷에 대한 설정 새로 추가
 # load_dotenv()
 
+# 기존 .env 환경변수 코드 제거
 S3_BUCKET = os.getenv("S3_BUCKET")
 S3_REGION = os.getenv("S3_REGION")
 CLOUDFRONT_URL = os.getenv("CLOUDFRONT_URL") 
 aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
 aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+
+# Secrets Manager에서 값 읽기
+# def get_secret(secret_name, region_name):
+#     client = boto3.client("secretsmanager", region_name=region_name)
+#     response = client.get_secret_value(SecretId=secret_name)
+#     secret = response["SecretString"]
+#     return json.loads(secret)
+
+# secret_dict = get_secret("movie/deploy", "ap-northeast-2")
+
+# S3_BUCKET = secret_dict.get("S3_BUCKET")
+# S3_REGION = secret_dict.get("S3_REGION")
+# CLOUDFRONT_URL = secret_dict.get("CLOUDFRONT_URL")
+# aws_access_key_id = secret_dict.get("AWS_ACCESS_KEY_ID")
+# aws_secret_access_key = secret_dict.get("AWS_SECRET_ACCESS_KEY")
 
 s3 = boto3.client(
     "s3",
